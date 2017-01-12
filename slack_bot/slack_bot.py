@@ -6,7 +6,6 @@ import RPi.GPIO as GPIO
 
 token=os.environ.get('SLACK_TOKEN')
 
-bot_userid="U3FFGJ8S1"
 command_prefix=":botface"
 TRIG_PORT=27
 
@@ -18,10 +17,12 @@ sys.stdout.write("Test:\n")
 sys.stdout.write(str(res)+"\n")
 sys.stdout.write("(completed)\n\n")
 
-
+# Cache for user id to user name map
 user_dir={}
-keyw_dur_map={}
 
+# Keyword to GPIO on durations
+#   You can hard code/initialize default durations here as well
+keyw_dur_map={}
 keyw_dur_map["activate"]=4
 
 ###############################################################################
@@ -73,21 +74,32 @@ def scan_message(message, user):
 			except ValueError:
 				reply = "Could not convert: " + dur + " to a number."
 				
-		elif(res_len==3 and cmd=="rem"):
+		elif(res_len==3 and (cmd=="rem" or cmd=="remove" or cmd=="del" or cmd=="delete")):
 			try:
 				del keyw_dur_map[keyword]
 				reply="ok. '" + keyword + "' deleted."
 			except KeyError:
 				reply="Keyword not found."
 
-		elif(res_len==2 and cmd=="lis"):
+		elif(res_len==2 and (cmd=="lis" or cmd=="list")):
 			reply=keyw_dur_map
 
 		elif(res_len==2 and cmd=="say_my_name"):
 			reply="yes, " + user + "!!"
 
+		elif(res_len==2 and cmd=="help"):
+			reply="Commands are:\n" + \
+				"  add <keyword> <duration>\n" + \
+				"     Add keyword with activation duration.\n" + \
+				"  rem <keyword>\n" + \
+				"     Remove keyword.\n" + \
+				"  lis \n" + \
+				"     List keywords with their activation durations.\n" + \
+				"  say_my_name\n" + \
+				"     Respond with user name.\n" + \
+				"\n"
 		else:
-			reply="no entiendo your command, yo..."
+			reply="no entiendo your command, yo... \n try " + command_prefix + " help\n"
 		return reply
 	else:
 		#reply="[[" + message + "]]"
