@@ -82,7 +82,7 @@ def scan_message(message, user):
 				reply="Keyword not found."
 
 		elif(res_len==2 and (cmd=="lis" or cmd=="list")):
-			reply=keyw_dur_map
+			reply="Here are your (keyword:duration)-tuples:\n" + str(keyw_dur_map)
 
 		elif(res_len==2 and cmd=="say_my_name"):
 			reply="yes, " + user + "!!"
@@ -106,6 +106,7 @@ def scan_message(message, user):
 		# Search keywords
 
 		words=re.split('\W+', message)
+		hits=False
 		for key in keyw_dur_map:
 			for wrd in words:
 				if( key==wrd or \
@@ -113,7 +114,12 @@ def scan_message(message, user):
 				   (key+"ed")==wrd or \
 				   (key+"d")==wrd):
 					execute_gpio(TRIG_PORT, keyw_dur_map[key])
-		reply=None
+					hits=True
+					
+		if(hits==True):
+			reply="#"
+		else:
+			reply=None
 	
 	return reply
 
@@ -161,13 +167,17 @@ if sc.rtm_connect():
 							if(evt["subtype"]=="message_changed"):
 								user=evt["message"]["user"]
 								text=evt["message"]["text"]
+								time_stamp=evt["message"]["ts"]
+								
 							if(evt["subtype"]=="message_deleted"):
 								sys.stdout.write("Message Deleted...\n")
 								continue
 						except:
 							user=evt["user"]
 							text=evt["text"]
+							time_stamp=evt["ts"]
 
+						channel=evt["channel"]
 						user_name=get_user_name(user)
 
 						if(user==bot_userid):
@@ -177,8 +187,10 @@ if sc.rtm_connect():
 							reply=scan_message(text, user_name)
 					
 							if(not reply==None):
-								sc.api_call("chat.postMessage", channel=evt["channel"], 
-								text=reply, as_user=True)
+								if(reply=="#"):
+									sc.api_call("reactions.add", name="zap", channel=channel, timestamp=time_stamp) 
+								else:
+									sc.api_call("chat.postMessage", channel=channel, text=reply, as_user=True)
 
 					elif(evt["type"]=="presence_change"):
 						user_name=get_user_name(evt["user"])
