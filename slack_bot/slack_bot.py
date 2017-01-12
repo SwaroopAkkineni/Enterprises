@@ -12,10 +12,12 @@ TRIG_PORT=27
 
 sc=SlackClient(token)
 
+# Test API
 res=sc.api_call("api.test")
 sys.stdout.write("Test:\n")
 sys.stdout.write(str(res)+"\n")
-sys.stdout.write("(completed)\n")
+sys.stdout.write("(completed)\n\n")
+
 
 user_dir={}
 keyw_dur_map={}
@@ -113,18 +115,19 @@ def get_user_name(user_id):
 	return(user_name)
 
 ###############################################################################
-	
-# Confirm that bot user id is correct
-res=sc.api_call("users.info", user=bot_userid)
-if(res["ok"]==False):
-	sys.stdout.write("Error:  bot user id not found in directory.\n")
-	sys.exit()
 
+# Get identity
+sys.stdout.write("Acquiring my own identity...\n")
+res=sc.api_call("auth.test")
+sys.stdout.write(str(res)+"\n")
+bot_userid=res["user_id"]
+bot_name=get_user_name(bot_userid)
+sys.stdout.write("I am: "+bot_userid+" / "+bot_name+"\n\n")
 
-
-
+# Start main loop	
 sys.stdout.write("\n\nConnecting...\n")
 if sc.rtm_connect():
+
 	sys.stdout.write("Connected.  Listening...\n")
 	while True:
 		msg=sc.rtm_read()
@@ -151,7 +154,7 @@ if sc.rtm_connect():
 
 						user_name=get_user_name(user)
 
-						if(user==bot_userid):	# Kelvin
+						if(user==bot_userid):
 							sys.stdout.write("(Ignoring message from self.)\n")
 							# Ignore message from self
 						else:
