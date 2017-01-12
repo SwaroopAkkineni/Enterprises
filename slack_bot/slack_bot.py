@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
 from slackclient import SlackClient
-import time, json, sys, re
+import time, json, sys, re, os
 import RPi.GPIO as GPIO
 
-token="xoxb-117526620885-8GnrLxrHTw6HWzXu9ITRk8nc"
+token=os.environ.get('SLACK_TOKEN')
+
 bot_userid="U3FFGJ8S1"
 command_prefix=":botface"
 TRIG_PORT=27
