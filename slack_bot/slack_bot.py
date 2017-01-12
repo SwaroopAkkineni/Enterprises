@@ -70,7 +70,7 @@ def scan_message(message, user):
 			try:
 				dur_val=float(dur)
 				keyw_dur_map[keyword]=dur_val
-				reply = "'"+keyword + "' added with " + dur + " as response."
+				reply = "'"+keyword + "' added with " + dur + " second(s) as response."
 			except ValueError:
 				reply = "Could not convert: " + dur + " to a number."
 				
@@ -89,14 +89,14 @@ def scan_message(message, user):
 
 		elif(res_len==2 and cmd=="help"):
 			reply="Commands are:\n" + \
-				"  add <keyword> <duration>\n" + \
-				"     Add keyword with activation duration.\n" + \
-				"  rem <keyword>\n" + \
-				"     Remove keyword.\n" + \
-				"  lis \n" + \
-				"     List keywords with their activation durations.\n" + \
-				"  say_my_name\n" + \
-				"     Respond with user name.\n" + \
+				"    add <keyword> <duration>\n" + \
+				"        Add keyword with activation duration.\n" + \
+				"    rem <keyword>\n" + \
+				"        Remove keyword.\n" + \
+				"    lis \n" + \
+				"        List keywords with their activation durations.\n" + \
+				"    say_my_name\n" + \
+				"        Respond with user name.\n" + \
 				"\n"
 		else:
 			reply="no entiendo your command, yo... \n try " + command_prefix + " help\n"
@@ -105,10 +105,14 @@ def scan_message(message, user):
 		#reply="[[" + message + "]]"
 		# Search keywords
 
+		words=re.split('\W+', message)
 		for key in keyw_dur_map:
-			found=re.search(key, message)
-			if(not found==None):
-				execute_gpio(TRIG_PORT, keyw_dur_map[key])
+			for wrd in words:
+				if( key==wrd or \
+				   (key+"s")==wrd or \
+				   (key+"ed")==wrd or \
+				   (key+"d")==wrd):
+					execute_gpio(TRIG_PORT, keyw_dur_map[key])
 		reply=None
 	
 	return reply
